@@ -50,7 +50,7 @@ router.put("/:id", validatePostID, validatePost, (req, res) => {
   const id = req.params.id;
   postData
     .update(id, changes)
-    .then(count => {
+    .then(() => {
       postData.getById(id).then(updatedPost => {
         res.status(200).json({ updatedPost, message: "Post updated." });
       });
@@ -84,7 +84,6 @@ function validatePost(req, res, next) {
   } else if (!text){
     res.status(400).json({ errorMessage: "Missing requiered text feild" });
   } else {
-    req.post = post;
     next();
   }
 }
@@ -95,7 +94,6 @@ function validatePostID(req, res, next) {
     if (!post) {
       res.status(400).json({ message: "Post not found" });
     } else {
-      req.post = post;
       next();
     }
   });

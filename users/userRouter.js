@@ -99,7 +99,6 @@ function validateUserId(req, res, next) {
     if (!user) {
       res.status(400).json({ message: "invalid user id" });
     } else {
-      req.user = user;
       next();
     }
   });
