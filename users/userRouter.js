@@ -116,15 +116,4 @@ function validateUser(req, res, next) {
   }
 }
 
-function validatePost(req, res, next) {
-  const body = req.body;
-  const text = req.body.text;
-  if (!body || !text) {
-    res.status(400).json({ errorMessage: "Something went wrong" });
-  } else {
-    req.post = post;
-    next();
-  }
-}
-
 module.exports = router;
