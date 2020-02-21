@@ -3,21 +3,6 @@ const userData = require("./userDb");
 
 const router = express.Router();
 
-router.post("/", validateUser, (req, res) => {
-  const userData = req.body;
-  userData
-    .insert(userData)
-    .then(newUser => {
-      res.status(201).json(newUser);
-    })
-    .catch(error => {
-      console.log(error);
-      res.status(500).json({
-        error: "There was an error while saving the new user to the database."
-      });
-    });
-});
-
 router.get("/", (req, res) => {
   userData
     .get(req)
@@ -93,6 +78,20 @@ router.put("/:id", (req, res) => {
     });
 });
 
+router.post("/", validateUser, (req, res) => {
+  const userData = req.body;
+  userData
+    .insert(userData)
+    .then(newUser => {
+      res.status(201).json(newUser);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        error: "There was an error while saving the new user to the database."
+      });
+    });
+});
 
 function validateUserId(req, res, next) {
   const id = req.params.id;
