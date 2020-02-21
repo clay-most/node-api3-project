@@ -1,27 +1,102 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  // do your magic!
+const postData = require("./postDb");
+
+router.get("/", (req, res) => {
+  postData
+    .get(req)
+    .then(posts => {
+      res.status(200).json({ posts });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "The posts could not be retrieved." });
+    });
 });
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+router.get("/:id", validatePostID, (req, res) => {
+  postData
+    .getById(req.params.id)
+    .then(post => {
+      res.status(200).json({ post });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "The post could not be retrieved." });
+    });
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+router.delete("/:id", validatePostID, (req, res) => {
+  let deletedPost = {};
+  postData.getById(req.params.id).then(post => {
+    deletedPost = post;
+  });
+
+  postData
+    .remove(req.params.id)
+    .then(() => {
+      res.status(200).json({ deletedPost, message: "Post deleted." });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "Post could not be deleted" });
+    });
 });
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+router.put("/:id", validatePostID, validatePost, (req, res) => {
+  const changes = req.body;
+  const id = req.params.id;
+  postData
+    .update(id, changes)
+    .then(() => {
+      postData.getById(id).then(updatedPost => {
+        res.status(200).json({ updatedPost, message: "Post updated." });
+      });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "Post could not be updated." });
+    });
 });
 
-// custom middleware
+router.post("/:id/posts", validatePost, (req, res) => {
+  const postData = req.body;
+  postDb
+    .insert(postData)
+    .then(newPost => {
+      res.status(201).json(newPost);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        error: "There was an error while saving the new post to the database."
+      });
+    });
+});
 
-function validatePostId(req, res, next) {
-  // do your magic!
+function validatePost(req, res, next) {
+  const body = req.body;
+  const text = req.body.text;
+  if (!body) {
+    res.status(400).json({ errorMessage: "Missing post data" });
+  } else if (!text){
+    res.status(400).json({ errorMessage: "Missing requiered text feild" });
+  } else {
+    next();
+  }
+}
+
+function validatePostID(req, res, next) {
+  const id = req.params.id;
+  postData.getById(id).then(post => {
+    if (!post) {
+      res.status(400).json({ message: "Post not found" });
+    } else {
+      next();
+    }
+  });
 }
 
 module.exports = router;
