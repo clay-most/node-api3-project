@@ -1,27 +1,87 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  // do your magic!
+const postData = require("./postDb");
+
+router.get("/", (req, res) => {
+  postData
+    .get(req)
+    .then(posts => {
+      res.status(200).json({ posts });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "The posts could not be retrieved." });
+    });
 });
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+router.get("/:id", validatePostID, (req, res) => {
+  postData
+    .getById(req.params.id)
+    .then(post => {
+      res.status(200).json({ post });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "The post could not be retrieved." });
+    });
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+router.delete("/:id", validatePostID, (req, res) => {
+  let deletedPost = {};
+  postData.getById(req.params.id).then(post => {
+    deletedPost = post;
+  });
+
+  postData
+    .remove(req.params.id)
+    .then(() => {
+      res.status(200).json({ deletedPost, message: "Post deleted." });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "Post could not be deleted" });
+    });
 });
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+router.put("/:id", validatePostID, validatePost, (req, res) => {
+  const changes = req.body;
+  const id = req.params.id;
+  postData
+    .update(id, changes)
+    .then(count => {
+      postData.getById(id).then(updatedPost => {
+        res.status(200).json({ updatedPost, message: "Post updated." });
+      });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "Post could not be updated." });
+    });
 });
 
-// custom middleware
+function validatePost(req, res, next) {
+  const body = req.body;
+  const text = req.body.text;
+  if (!body || !text) {
+    res.status(400).json({ errorMessage: "Something went wrong" });
+  } else {
+    req.post = post;
+    next();
+  }
+}
 
-function validatePostId(req, res, next) {
-  // do your magic!
+function validatePostID(req, res, next) {
+  const id = req.params.id;
+  postData.getById(id).then(post => {
+    if (!post) {
+      res.status(400).json({ message: "Post not found" });
+    } else {
+      req.post = post;
+      next();
+    }
+  });
 }
 
 module.exports = router;
