@@ -61,6 +61,21 @@ router.put("/:id", validatePostID, validatePost, (req, res) => {
     });
 });
 
+router.post("/:id/posts", validatePost, (req, res) => {
+  const postData = req.body;
+  postDb
+    .insert(postData)
+    .then(newPost => {
+      res.status(201).json(newPost);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        error: "There was an error while saving the new post to the database."
+      });
+    });
+});
+
 function validatePost(req, res, next) {
   const body = req.body;
   const text = req.body.text;
