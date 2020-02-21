@@ -79,8 +79,10 @@ router.post("/:id/posts", validatePost, (req, res) => {
 function validatePost(req, res, next) {
   const body = req.body;
   const text = req.body.text;
-  if (!body || !text) {
-    res.status(400).json({ errorMessage: "Something went wrong" });
+  if (!body) {
+    res.status(400).json({ errorMessage: "Missing post data" });
+  } else if (!text){
+    res.status(400).json({ errorMessage: "Missing requiered text feild" });
   } else {
     req.post = post;
     next();
